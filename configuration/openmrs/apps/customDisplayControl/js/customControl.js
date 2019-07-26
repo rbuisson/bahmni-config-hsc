@@ -95,20 +95,20 @@ function billingStatusController($scope, $element, erpService, visitService, app
   const OVERDUE = "OVERDUE"
   const NOT_OVERDUE = "NOT_OVERDUE"
 
-  const retireLinesConditions = $scope.config.retireLinesConditions
-  const nonApprovedConditions = $scope.config.nonApprovedConditions
-  const approvedConditions = $scope.config.approvedConditions
+  const retireLinesConditions = $scope.config.retireLinesConditions;
+  const nonApprovedConditions = $scope.config.nonApprovedConditions;
+  const approvedConditions = $scope.config.approvedConditions;
+  const orderExternalIdFieldName = $scope.config.orderExternalIdFieldName;
 
-  // Temporary filter to work on non-Bahmni Odoo installs.
-  // TODO: replace with '"field": "partner_uuid"' and '"value": $scope.patient.uuid'
   const patientFilter = {
-    "field": "partner_id",
+    "field": $scope.config.patientUuidFieldName,
     "comparison": "=",
-    "value": "8"
+    "value": $scope.patient.uuid
   }
+
   // Initialize the filters with the patient filter.
-  var invoicesFilters = [];
-  var ordersFilters = [];
+  var invoicesFilters = [patientFilter];
+  var ordersFilters = [patientFilter];
 
   var invoices = [];
   var orders = [];
@@ -121,7 +121,7 @@ function billingStatusController($scope, $element, erpService, visitService, app
     "date_order",
     "name",
     "number",
-    "x_external_order_id"
+    orderExternalIdFieldName
   ]
 
   var retrieveErpOrders = function() {
@@ -210,7 +210,7 @@ function billingStatusController($scope, $element, erpService, visitService, app
           order.date_order,
           null,
           order.name,
-          order.x_external_order_id,
+          orderLine[orderExternalIdFieldName],
           tags,
           orderLine.display_name
         ))
@@ -237,7 +237,7 @@ function billingStatusController($scope, $element, erpService, visitService, app
         if (invoiceLine.origin != null) {
           orders.forEach(function(order) {
             if (order.name == invoiceLine.origin) {
-              orderUuid = order.x_external_order_id;
+              orderUuid = order[orderExternalIdFieldName];
             }
           })
         };
@@ -324,7 +324,7 @@ function billingStatusVisitController($scope, visitService, appService, $q) {
               uuid: visit.uuid,
               order: order.uuid,
               startDate: visit.startDatetime,
-              endDate: visit.startDatetime
+              endDate: visit.stopDatetime
             })
           })
         })
